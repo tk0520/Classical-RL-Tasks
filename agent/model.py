@@ -13,7 +13,7 @@ class DQN(nn.Module):
     
     def preprocess(self, x):
         if isinstance(x, np.ndarray):
-            return torch.tensor(x)
+            return torch.from_numpy(x)
         
     def forward(self, x):
         x = self.preprocess(x)
@@ -28,4 +28,4 @@ class DQN(nn.Module):
         x = F.relu(x)
 
         x = self.output(x)
-        return torch.argmax(x).item()
+        return x
