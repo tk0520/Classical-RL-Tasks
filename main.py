@@ -1,0 +1,9 @@
+import gymnasium as gym
+
+env = gym.make("CartPole-v1", render_mode="rgb_array")
+observation, info = env.reset()
+
+print("Observation:", observation)
+print("Info:", info)
+
+env.close()
