@@ -1,9 +1,19 @@
 import gymnasium as gym
+import time
 
-env = gym.make("CartPole-v1", render_mode="rgb_array")
-observation, info = env.reset()
+from agent.model import DQN
+import settings
 
-print("Observation:", observation)
-print("Info:", info)
+try:
+    env = gym.make("CartPole-v1", render_mode=settings.RENDER_MODE)
+    observation, info = env.reset()
 
-env.close()
+    print("Observation:", observation)
+    print("Info:", info)
+    print(env.action_space.n)
+
+    model = DQN(env.action_space.n)
+    action = model.forward(observation)
+    print("Action:", action)
+finally:
+    env.close()
