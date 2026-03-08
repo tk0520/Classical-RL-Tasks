@@ -1,10 +1,20 @@
 from agent.learning import get_loss, get_loss_batch
+import matplotlib.pyplot as plt
 import time
 
 import settings
 
+def record_stat(total_rewards):
+    plt.plot(total_rewards, color="skyblue")
+    plt.xlabel("Episodes")
+    plt.ylabel("Total Rewards")
+    plt.savefig(f"./stat/{len(total_rewards)}_graph.png")
+    
+
 def train(env, agent):
     step_count = 0
+    total_rewards = []
+    losses = []
 
     for episode_count in range(settings.NUM_EPISODES):
         observation, _ = env.reset()
@@ -22,7 +32,6 @@ def train(env, agent):
             observation = next_observation
             step_count += 1
             total_reward += reward
-            time.sleep(0.000005)
 
             if len(agent.replay_memory) > settings.INITIAL_MEMORY:
                 samples_batch = agent.replay_memory.get_samples()
@@ -37,9 +46,10 @@ def train(env, agent):
             
             if step_count % settings.UPDATE_INTERVAL == 0:
                 agent.update_target_model()
-                print("Target Model Updated!")
+                record_stat(total_rewards)
 
             if episode_end:
+                total_rewards.append(total_reward)
                 print("step_count:", step_count)
                 print("Episode Count:", episode_count)
                 print("Episode Reward:", total_reward)
