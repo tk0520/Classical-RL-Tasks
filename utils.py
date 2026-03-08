@@ -1,13 +1,19 @@
 from agent.learning import get_loss, get_loss_batch
 import matplotlib.pyplot as plt
+import torch
+import copy
 
 import settings
 
 def record_stat(total_rewards):
-    plt.plot(total_rewards, color=settings.PLOT_COLOR, linewidth=1)
+    total_rewards_copy = copy.deepcopy(total_rewards)
+    total_rewards_per_50 = total_rewards_copy[::50]
+
+    plt.plot(total_rewards_per_50, color=settings.PLOT_COLOR, linewidth=1)
     plt.xlabel("Episodes")
-    plt.ylabel("Total Rewards")
+    plt.ylabel("Total Rewards per 50 Episodes")
     plt.savefig(f"./stats/{len(total_rewards)}_graph.png")
+    plt.close()
     
 def train(env, agent):
     step_count = 0
@@ -46,10 +52,12 @@ def train(env, agent):
                 
             if episode_count % settings.STAT_INTERVAL == 0:
                 record_stat(total_rewards)
-
+            
+            if episode_count % settings.MODEL_SAVE_INTERVAL == 0:
+                torch.save(agent.current_model, f"models/DQN_CartPole_{episode_count}.pt")
+        
             if episode_end:
                 total_rewards.append(total_reward)
                 print("step_count:", step_count)
                 print("Episode Count:", episode_count)
                 print("Episode Reward:", total_reward)
-        

@@ -2,7 +2,6 @@ from gymnasium.wrappers import RecordVideo
 import gymnasium as gym
 
 from agent.agent import CartPoleAgent
-from agent.learning import get_loss
 from utils import train
 import settings
 
@@ -16,6 +15,5 @@ try:
     
     agent = CartPoleAgent(env.action_space.n)
     train(env, agent)
-
 finally:
     env.close()
