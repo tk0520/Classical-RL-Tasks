@@ -1,20 +1,17 @@
 from agent.learning import get_loss, get_loss_batch
 import matplotlib.pyplot as plt
-import time
 
 import settings
 
 def record_stat(total_rewards):
-    plt.plot(total_rewards, color="skyblue")
+    plt.plot(total_rewards, color=settings.PLOT_COLOR, linewidth=1)
     plt.xlabel("Episodes")
     plt.ylabel("Total Rewards")
-    plt.savefig(f"./stat/{len(total_rewards)}_graph.png")
+    plt.savefig(f"./stats/{len(total_rewards)}_graph.png")
     
-
 def train(env, agent):
     step_count = 0
     total_rewards = []
-    losses = []
 
     for episode_count in range(settings.NUM_EPISODES):
         observation, _ = env.reset()
@@ -44,8 +41,10 @@ def train(env, agent):
             if step_count > settings.EPSILON_DECAY_COUNT:
                 agent.epsilon_decay()
             
-            if step_count % settings.UPDATE_INTERVAL == 0:
+            if episode_count % settings.UPDATE_INTERVAL == 0:
                 agent.update_target_model()
+                
+            if episode_count % settings.STAT_INTERVAL == 0:
                 record_stat(total_rewards)
 
             if episode_end:
