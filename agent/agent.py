@@ -1,5 +1,6 @@
 from agent.model import DQN
 from torch.optim import Adam
+import random
 import torch
 
 from agent.memory import ReplayMemory
@@ -10,18 +11,31 @@ class CartPoleAgent:
         self.current_model = DQN(num_action_space)
         self.target_model = DQN(num_action_space)
         self.optimizer = Adam(self.current_model.parameters(), lr=settings.LEARNING_RATE)
-        self.replay_memory = ReplayMemory()
         
+        self.replay_memory = ReplayMemory()
+        self.epsilon = settings.EPSILON_START
+        self.actions = list(range(num_action_space))
+
         self.target_model.load_state_dict(self.current_model.state_dict())
 
     def current_evaluate(self, observation):
-        return self.current_model.forward(observation).max()
+        return self.current_model.forward(observation)
     
     def target_evaluate(self, observation):
         with torch.no_grad():
-            return self.target_model.forward(observation).max()
+            return self.target_model.forward(observation)
+
+    def update_target_model(self):
+        self.target_model.load_state_dict(self.current_model.state_dict())
+
+    def epsilon_decay(self):
+        self.epsilon = max(settings.EPSILON_END, self.epsilon * settings.EPSILON_DECAY)
 
     def act(self, observation):
-        q_values = self.current_model.forward(observation)
-        return torch.argmax(q_values).item()
+        if random.random() < self.epsilon:
+            return random.choice(self.actions)
+        
+        with torch.no_grad():
+            q_values = self.current_model.forward(observation)
+            return torch.argmax(q_values).max().item()
 

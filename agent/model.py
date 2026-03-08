@@ -14,6 +14,7 @@ class DQN(nn.Module):
     def preprocess(self, x):
         if isinstance(x, np.ndarray):
             return torch.from_numpy(x)
+        return x
         
     def forward(self, x):
         x = self.preprocess(x)
