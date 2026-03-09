@@ -2,7 +2,7 @@ from gymnasium.wrappers import RecordVideo
 import gymnasium as gym
 
 from agent.agent import CartPoleAgent
-from utils import train
+from utils import train, train_with_trajectory
 import settings
 
 try:
@@ -12,8 +12,8 @@ try:
         video_folder="videos",
         episode_trigger=lambda episode_id: episode_id % settings.VIDEO_INTERVAL == 0
     )
-    
-    agent = CartPoleAgent(env.action_space.n)
-    train(env, agent)
+    agent = CartPoleAgent(env.observation_space.shape[0], env.action_space.n)
+    # train(env, agent)
+    train_with_trajectory(env, agent)
 finally:
     env.close()

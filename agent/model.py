@@ -4,12 +4,15 @@ import numpy as np
 import torch
 
 class DQN(nn.Module):
-    def __init__(self, num_action_space):
+    def __init__(self, num_state_space, num_action_space):
         super().__init__()
-        self.dense1 = nn.Linear(4, 8)
-        self.dense2 = nn.Linear(8, 32)
-        self.dense3 = nn.Linear(32, 64)
-        self.output = nn.Linear(64, num_action_space)
+        self.dense1 = nn.Linear(num_state_space, num_state_space * 4)
+        output_size = num_state_space * 4
+        self.dense2 = nn.Linear(output_size, output_size * 4)
+        output_size *= 4
+        self.dense3 = nn.Linear(output_size, output_size * 4)
+        output_size *= 4
+        self.output = nn.Linear(output_size, num_action_space)
     
     def preprocess(self, x):
         if isinstance(x, np.ndarray):
