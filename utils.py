@@ -38,7 +38,7 @@ def train(env, agent):
 
             if len(agent.replay_memory) > settings.INITIAL_MEMORY:
                 samples_batch = agent.replay_memory.get_samples()
-                loss_batch = get_loss_batch(samples_batch, agent)
+                loss_batch = agent.learner.get_loss_batch(samples_batch)
                 agent.optimizer.zero_grad()
 
                 loss_batch.backward()
