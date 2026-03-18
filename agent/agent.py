@@ -1,21 +1,24 @@
-from agent.model import DQN
 from torch.optim import Adam
+import numpy as np
 import random
 import torch
 
 from agent.learner.q_learning import QLearner, NStepQLearner
 from agent.memory import ReplayMemory
+from agent.model import DQN, DQNAtari
 import settings
 
 class CartPoleAgent:
     def __init__(self, num_state_space, num_action_space):
-        self.current_model = DQN(num_state_space, num_action_space)
-        self.target_model = DQN(num_state_space, num_action_space)
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+        self.current_model = DQN(num_state_space, num_action_space).to(device=self.device)
+        self.target_model = DQN(num_state_space, num_action_space).to(device=self.device)
         self.optimizer = Adam(self.current_model.parameters(), lr=settings.LEARNING_RATE)
         self.target_model.load_state_dict(self.current_model.state_dict())
         
         self.replay_memory = ReplayMemory()
-        self.learner = NStepQLearner(self)
+        self.learner = QLearner(self)
         
         self.epsilon = settings.EPSILON_START
         self.actions = list(range(num_action_space))
@@ -35,8 +38,24 @@ class CartPoleAgent:
 
     def act(self, observation):
         if random.random() < self.epsilon:
-            return random.choice(self.actions)
+            action = random.choice(self.actions)
+            return action
         
         with torch.no_grad():
+            if isinstance(observation, np.ndarray):
+                observation = torch.from_numpy(observation).float()
+
+            if observation.ndim == 3:
+                observation = observation.unsqueeze(0)
+            
+            device = next(self.current_model.parameters()).device
+            observation = observation.to(device)
+    
             q_values = self.current_model.forward(observation)
-            return torch.argmax(q_values).max().item()
+            return q_values.squeeze(0).argmax().item()
+
+class AtariAgent(CartPoleAgent):
+    def __init__(self, num_state_space, num_action_space):
+        super().__init__(num_state_space, num_action_space)
+        self.current_model = DQNAtari(num_state_space, num_action_space).to(device=self.device)
+        self.target_model = DQNAtari(num_state_space, num_action_space).to(device=self.device)
